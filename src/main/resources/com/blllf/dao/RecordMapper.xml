@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.blllf.dao.RecordMapper">
+
+    <select id="selectByBorrower" resultMap="selectRecord">
+        select * from record
+        <where>
+            <if test="bookname != null and bookname != '' ">and record_bookname like #{bookname}</if>
+            <if test="borrower != null and  borrower != '' ">and record_borrower like #{borrower}</if>
+        </where>
+    </select>
+
+    <resultMap id="selectRecord" type="com.blllf.pojo.Record">
+        <id property="id" column="record_id"/>
+        <result property="bookname" column="record_bookname"/>
+        <result property="bookisbn" column="record_bookisbn"/>
+        <result property="borrower" column="record_borrower"/>
+        <result property="borrowtime" column="record_borrowtime"/>
+        <result property="remandtime" column="record_remandtime"/>
+    </resultMap>
+
+
+</mapper>

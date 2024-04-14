@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册用户</title>
+    <script src="../js/vue.js"></script>
+    <script src="../element-ui/lib/index.js"></script>
+    <script src="../js/axios-0.18.0.js"></script>
+    <link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+</head>
+
+<style>
+
+    .password-input {
+        width: 350px; /* 设置你想要的宽度 */
+    }
+
+    #app {
+       /* margin: 200px; !* 设置外边距 *!
+        padding: 10px; !* 设置内边距 *!*/
+        position: absolute; /* 使用绝对定位 */
+        top: 40%; /* 从顶部距离屏幕中心50%的位置 */
+        left: 40%; /* 从左侧距离屏幕中心50%的位置 */
+        transform: translate(-50%, -50%); /* 使用transform属性将元素向左和向上移动自身宽度和高度的50%，从而实现居中 */
+        margin: 0; /* 移除外边距 */
+        padding: 10px; /* 设置内边距 */
+    }
+
+    /*点击登录的超链接位置*/
+    .el-link {
+        position: fixed; /* 使用 Flexbox 布局 */
+        top: 380px;/*距离底部的距离*/
+        left: 300px;/*距离左侧的距离*/
+    }
+
+    .full-screen-background {
+        background-image: url('../img/register.png'); /* 设置背景图片的 URL */
+
+        background-size: cover; /* 缩放背景图像以完全覆盖容器 */
+        background-position: center; /* 居中显示背景图片 */
+
+        width: 100%; /* 宽度填充整个屏幕 */
+        height: 940px; /* 高度填充整个屏幕 */
+        display: flex; /* 使用 Flexbox 布局 */
+
+    }
+
+    .zhanghu{
+        font-weight: lighter;
+        padding:20px;
+    }
+
+
+</style>
+<body>
+
+<div class="full-screen-background">
+
+
+<div id="app" >
+
+    <div class="zhanghu">
+        <h1 style="font-weight: lighter">账户注册 :</h1>
+    </div>
+
+    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="20%" class="demo-ruleForm">
+        <el-form-item label="用户名" prop="name">
+            <el-input type="username" v-model="ruleForm.name" autocomplete="off" class="password-input"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱账号" prop="email">
+            <el-input type="email" v-model="ruleForm.email" autocomplete="off" class="password-input"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+            <el-input type="password" v-model="ruleForm.password" autocomplete="off" class="password-input"></el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="checkPass">
+            <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off" class="password-input"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="submitForm('ruleForm')">注册</el-button>
+            <el-button @click="resetForm('ruleForm')">重置</el-button>
+            <el-link  href="http://localhost:8080/ssmanno/admin/login.jsp">请点击登录</el-link>
+        </el-form-item>
+    </el-form>
+
+</div>
+</div>
+
+
+
+
+<script>
+    new Vue({
+
+        el:"#app",
+
+        data(){
+
+            var validateEmail = (rule , value , callback) =>{
+                if (value === ''){
+                    callback(new Error('请输入邮箱'));
+                }else{
+                    if (value.indexOf('@') === -1){
+                        callback(new Error('请输入有效邮箱'));
+                    }else {
+                        callback();
+                    }
+                }
+            }
+
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else {
+                    if (this.ruleForm.checkPass !== '') {
+                        this.$refs.ruleForm.validateField('checkPass');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
+
+
+            return{
+
+                ruleForm: {
+
+                    password: '',
+                    checkPass: '',
+                    name:'',
+                    email:''
+                },
+
+                message:{
+                    name:'',
+                    email:'',
+                    password:''
+                },
+
+                rules: {
+
+                    email:[
+                        {validator: validateEmail, trigger: 'blur'}
+                    ],
+
+                    password: [
+                        //trigger: 'blur'：这指定了触发验证的方式。blur 表示在表单字段失去焦点时进行验证。
+                        { validator: validatePass, trigger: 'blur' }
+                    ],
+                    checkPass: [
+                        { validator: validatePass2, trigger: 'blur' }
+                    ]
+                }
+            }
+
+            },
+        methods: {
+
+
+            submitForm(formName) {
+                var  _this = this ;
+
+                this.message.name = this.ruleForm.name;
+                this.message.password = this.ruleForm.password;
+                this.message.email = this.ruleForm.email;
+
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        axios({
+                            method:"post",
+                            url:"http://localhost:8080/ssmanno/register",
+                            data: _this.message
+                        }).then(resp =>{
+                            if (resp.data == "success"){
+                                this.$message({
+                                    message: '注册成功',
+                                    type: 'success'
+                                });
+                                //将文本框数据清0
+                                this.ruleForm = {
+                                    name: '',
+                                    email: '',
+                                    password: ''
+                                };
+                            }else if (resp.data == "fail"){
+                                this.$message.error("注册失败了，请重新填写");
+                            }
+                        })
+                    } else {
+                        this.$message.error("注册失败了，请重新填写");
+                    }
+                });
+            },
+
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            }
+        }
+
+    })
+</script>
+</body>
+</html>
